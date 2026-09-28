@@ -20,7 +20,6 @@
   *{ box-sizing:border-box; }
   body{
     margin:0;
-    padding-left:200px;
     background-color:var(--bg);
     background-image:url('image/25-Rnew.png');
     background-size:cover;
@@ -34,13 +33,17 @@
   h1,h2{ text-wrap:balance; margin:0; font-family:'Noto Serif TC','PMingLiU',serif; }
 
   .page-nav{
-    position:fixed; left:0; top:0; bottom:0; width:200px; z-index:10;
-    background:color-mix(in srgb, var(--surface) 92%, transparent);
+    position:fixed; left:0; top:0; bottom:0; width:min(240px,82vw); z-index:30;
+    background:color-mix(in srgb, var(--surface) 96%, transparent);
     backdrop-filter:blur(10px);
     border-right:1px solid var(--border);
-    padding:20px 14px; overflow-y:auto;
+    padding:60px 14px 20px; overflow-y:auto;
     display:flex; flex-direction:column; gap:4px;
+    transform:translateX(-100%);
+    transition:transform .25s ease;
+    box-shadow:16px 0 32px -16px rgba(0,0,0,.7);
   }
+  .page-nav.open{ transform:translateX(0); }
   .page-nav-title{
     font-size:.68rem; letter-spacing:.14em; text-transform:uppercase;
     color:var(--text-faint); font-weight:700; padding:0 12px 10px;
@@ -55,17 +58,29 @@
   .page-nav .page-link.active{ background:var(--accent-bg); color:var(--accent-strong); }
   .page-nav .page-divider{ height:1px; background:var(--border); margin:8px 4px; }
 
-  @media (max-width:760px){
-    body{ padding-left:0; }
-    .page-nav{
-      position:sticky; left:auto; top:0; bottom:auto; width:auto; height:auto;
-      flex-direction:row; align-items:center; overflow-x:auto; overflow-y:hidden;
-      border-right:none; border-bottom:1px solid var(--border);
-      padding:10px 14px; z-index:11;
-    }
-    .page-nav-title{ padding:0 10px 0 0; }
-    .page-nav .page-divider{ width:1px; height:20px; margin:0 4px; flex:none; }
+  .page-nav-toggle{
+    position:fixed; left:0; top:96px; z-index:31;
+    width:32px; height:60px; border-radius:0 10px 10px 0;
+    background:var(--surface-2); border:1px solid var(--border); border-left:none;
+    color:var(--text-dim); cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:left .25s ease, background-color .15s ease, color .15s ease;
   }
+  .page-nav-toggle:hover{ background:var(--accent-bg); color:var(--accent-strong); }
+  .page-nav-toggle .arrow{
+    width:8px; height:8px; border-right:2px solid currentColor; border-bottom:2px solid currentColor;
+    transform:rotate(-45deg); transition:transform .25s ease;
+  }
+  .page-nav.open + .page-nav-toggle{ left:min(240px,82vw); }
+  .page-nav.open + .page-nav-toggle .arrow{ transform:rotate(135deg); }
+
+  .page-nav-backdrop{
+    position:fixed; inset:0; z-index:29;
+    background:rgba(0,0,0,.45);
+    opacity:0; pointer-events:none;
+    transition:opacity .25s ease;
+  }
+  .page-nav-backdrop.show{ opacity:1; pointer-events:auto; }
 
   .topbar{
     position:sticky; top:0; z-index:10;
@@ -240,6 +255,8 @@
 <nav class="page-nav" id="pageNav">
   <div class="page-nav-title">頁面</div>
 </nav>
+<button type="button" class="page-nav-toggle" id="pageNavToggle" aria-label="展開頁面清單" aria-expanded="false"><span class="arrow"></span></button>
+<div class="page-nav-backdrop" id="pageNavBackdrop"></div>
 
 <header class="topbar">
   <div class="topbar-inner">
@@ -445,14 +462,28 @@
     target.scrollIntoView({ behavior:'smooth', block:'center' });
   }
 
+  const pageNav = document.getElementById('pageNav');
+  const pageNavToggle = document.getElementById('pageNavToggle');
+  const pageNavBackdrop = document.getElementById('pageNavBackdrop');
+
+  function setNavOpen(open){
+    pageNav.classList.toggle('open', open);
+    pageNavBackdrop.classList.toggle('show', open);
+    pageNavToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    pageNavToggle.setAttribute('aria-label', open ? '收合頁面清單' : '展開頁面清單');
+  }
+
   render();
   document.getElementById('lookup').addEventListener('change', e => goToItem(e.target.value));
-  document.getElementById('pageNav').addEventListener('click', e => {
+  pageNav.addEventListener('click', e => {
     const link = e.target.closest('.page-link');
     if(!link) return;
     e.preventDefault();
     filterByDate(link.dataset.date);
+    setNavOpen(false);
   });
+  pageNavToggle.addEventListener('click', () => setNavOpen(!pageNav.classList.contains('open')));
+  pageNavBackdrop.addEventListener('click', () => setNavOpen(false));
 
   const SIDE_ART = ['image/Ai_restore_Peta.png', 'image/Ai_restore_Peta_2.png'];
   const sideArt = document.getElementById('sideArt');
