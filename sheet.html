@@ -185,6 +185,15 @@
     .topbar-inner{ flex-direction:column; align-items:stretch; }
     .lookup{ max-width:none; }
   }
+
+  .side-art{
+    position:fixed; right:0; bottom:0; z-index:1;
+    max-height:88vh; width:auto; pointer-events:none;
+    filter:drop-shadow(0 12px 24px rgba(0,0,0,.5));
+    opacity:0; transition:opacity .4s ease;
+  }
+  .side-art.loaded{ opacity:1; }
+  @media (max-width:1280px){ .side-art{ display:none; } }
 </style>
 </head><body>
 
@@ -210,6 +219,9 @@
   <hr class="rule">
   資料整理自 Sheet.xlsx →「歷史成交總集」工作表，欄位包含最低／最高價參考與各筆歷史成交紀錄。金額單位皆為 ED；標示「尚無成交紀錄」代表目前尚未有可參考的成交資料。點選右上角下拉選單可快速定位品項，點擊層級標題可展開／摺疊。
 </footer>
+
+<img class="side-art" id="sideArt" alt="">
+
 
 <script>
   const DATA = [{"name":"層級一","items":[{"name":"一般彈匣魔方","min":607753125,"max":1276281562,"history":[607753125,738727721,804057383,840000000,1000000000,1276281562]},{"name":"黑色碎片2個","min":1039464085,"max":1039464085,"history":[1039464085]},{"name":"[阿利爾] 防具選項轉換石3個","min":281420083,"max":893397093,"history":[281420083,661500000,893397093]},{"name":"[阿利爾] 防具選項備份卷1個","min":252000000,"max":252000000,"history":[252000000]},{"name":"[阿利爾] 核心備份模塊1個","min":0,"max":0,"history":[]},{"name":"每周鍛造材料1000個","min":422130125,"max":1100000000,"history":[422130125,1100000000]}]},{"name":"層級二","items":[{"name":"一般彈匣選擇箱","min":0,"max":0,"history":[]},{"name":"黑色碎片4個","min":525000000,"max":670000000,"history":[525000000,670000000]},{"name":"[阿利爾] 防具選項轉換石5個","min":600000000,"max":1215506250,"history":[600000000,1102500000,1102500000,1157625000,1215506250]},{"name":"[阿利爾] 防具選項備份卷3個","min":703550211,"max":1215506250,"history":[703550211,765768937,1215506250]},{"name":"[阿利爾] 核心備份模塊3個","min":0,"max":0,"history":[]},{"name":"核心備份模塊1個","min":15000000,"max":330750000,"history":[15000000,26250000,100000000,100000000,105000000,330750000]},{"name":"每周鍛造材料2000個","min":864388452,"max":864388452,"history":[864388452]}]},{"name":"層級三","items":[{"name":"核心1個","min":0,"max":0,"history":[]},{"name":"[阿利爾] 內布隆原型選擇箱","min":0,"max":0,"history":[]},{"name":"超彈匣魔方","min":2205000000,"max":2205000000,"history":[2205000000]},{"name":"[阿利爾] 防具選項轉換石10個","min":3000000000,"max":3000000000,"history":[3000000000]},{"name":"支援 & 戰鬥 & 通用彈匣選擇箱","min":0,"max":0,"history":[]},{"name":"[阿利爾] 核心備份模塊10個","min":0,"max":0,"history":[]},{"name":"核心備份模塊5個","min":1575000000,"max":1575000000,"history":[1575000000]}]},{"name":"層級四","items":[{"name":"穩定的核心1個","min":18573083924,"max":26532977040,"history":[18573083924,26532977040]},{"name":"內布隆原型選擇箱","min":0,"max":0,"history":[]},{"name":"超彈匣選擇箱","min":0,"max":0,"history":[]},{"name":"[阿利爾] 1%電路T板選擇箱","min":0,"max":0,"history":[]},{"name":"[阿利爾] 1%電路L板選擇箱","min":0,"max":0,"history":[]},{"name":"[阿利爾] 防具選項轉換石15個","min":0,"max":0,"history":[]},{"name":"[阿利爾] 核心備份模塊15個","min":0,"max":0,"history":[]},{"name":"核心備份模塊7個","min":0,"max":0,"history":[]}]},{"name":"層級五","items":[{"name":"[阿利爾] 死級詞條升級券1個","min":0,"max":0,"history":[]},{"name":"[阿利爾] 防具詞條升級券1個","min":0,"max":0,"history":[]},{"name":"[阿利爾] 複製電路選擇箱","min":0,"max":0,"history":[]},{"name":"[阿利爾] 防具選項轉換石20個","min":0,"max":0,"history":[]},{"name":"[阿利爾] 核心備份模塊20個","min":0,"max":0,"history":[]},{"name":"核心備份模塊10個","min":150000000,"max":3307500000,"history":[150000000,3307500000,3307500000]}]}];
@@ -339,6 +351,11 @@
 
   render();
   document.getElementById('lookup').addEventListener('change', e => goToItem(e.target.value));
+
+  const SIDE_ART = ['image/Ai_restore_Peta.png', 'image/Ai_restore_Peta_2.png'];
+  const sideArt = document.getElementById('sideArt');
+  sideArt.addEventListener('load', () => sideArt.classList.add('loaded'));
+  sideArt.src = SIDE_ART[Math.floor(Math.random() * SIDE_ART.length)];
 </script>
 
 </body></html>
