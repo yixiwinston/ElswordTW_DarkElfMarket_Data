@@ -255,6 +255,135 @@
   }
   .side-art.loaded{ opacity:1; }
   @media (max-width:1280px){ .side-art{ display:none; } }
+
+  .upload-trigger{
+    position:fixed; left:14px; bottom:14px; z-index:32;
+    padding:10px 16px; border-radius:999px;
+    background:var(--surface-2); border:1px solid var(--border);
+    color:var(--text-dim); font:inherit; font-size:.78rem; font-weight:700;
+    cursor:pointer; box-shadow:var(--shadow);
+    transition:background-color .15s ease, color .15s ease;
+  }
+  .upload-trigger:hover{ background:var(--accent-bg); color:var(--accent-strong); }
+
+  /* 背景待設定：目前使用與站台一致的毛玻璃面板，之後可替換 background-image */
+  .modal-overlay{
+    position:fixed; inset:0; z-index:40;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(0,0,0,.55);
+    opacity:0; transition:opacity .25s ease;
+    padding:20px;
+  }
+  .modal-overlay.show{ opacity:1; }
+  .modal-panel{
+    width:100%; max-width:360px;
+    background:color-mix(in srgb, var(--surface) 96%, transparent);
+    backdrop-filter:blur(10px);
+    border:1px solid var(--border); border-radius:14px;
+    box-shadow:var(--shadow);
+    padding:22px 20px;
+    transform:translateY(24px); opacity:0;
+    transition:transform .28s ease, opacity .28s ease;
+    position:relative;
+  }
+  .modal-overlay.show .modal-panel{ transform:translateY(0); opacity:1; }
+  .modal-panel.entry{ max-width:480px; }
+
+  .modal-close{
+    position:absolute; right:12px; top:12px;
+    width:26px; height:26px; border-radius:50%;
+    background:var(--surface-2); border:1px solid var(--border);
+    color:var(--text-dim); font-size:.9rem; line-height:1; cursor:pointer;
+  }
+  .modal-close:hover{ background:var(--accent-bg); color:var(--accent-strong); }
+
+  .modal-title{ font-family:'Noto Serif TC',serif; font-weight:700; font-size:1.05rem; margin-bottom:14px; }
+
+  .password-row{ display:flex; gap:8px; }
+  #passwordInput{
+    flex:1; padding:10px 12px; border-radius:9px; border:1px solid var(--border);
+    background:var(--item-bg); color:var(--text); font:inherit; font-size:.9rem;
+  }
+  #passwordInput:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  #passwordConfirm{
+    padding:10px 16px; border-radius:9px; border:1px solid var(--border);
+    background:var(--accent-bg); color:var(--accent-strong); font:inherit; font-weight:700;
+    cursor:pointer;
+  }
+  #passwordConfirm:hover{ filter:brightness(1.1); }
+  .password-error{ margin-top:8px; font-size:.78rem; color:#ff8a80; min-height:1.1em; }
+
+  .entry-date-row{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .entry-date-row label{ font-size:.84rem; color:var(--text-dim); }
+  .entry-date-hint{ font-size:.72rem; color:var(--text-faint); }
+  .date-picker{ position:relative; }
+  #entryDate{
+    width:11em; padding:8px 10px; border-radius:8px; border:1px solid var(--border);
+    background:var(--item-bg); color:var(--text); font:inherit; font-size:.85rem; cursor:pointer;
+  }
+  #entryDate:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+
+  .date-popover{
+    position:absolute; left:0; top:calc(100% + 6px); z-index:50;
+    width:240px; padding:12px;
+    background:var(--surface); border:1px solid var(--border); border-radius:12px;
+    box-shadow:var(--shadow);
+  }
+  .date-popover-head{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:8px; font-size:.82rem; font-weight:700; color:var(--text);
+  }
+  .date-nav{
+    width:24px; height:24px; border-radius:6px; border:1px solid var(--border);
+    background:var(--surface-2); color:var(--text-dim); cursor:pointer; font-size:.9rem; line-height:1;
+  }
+  .date-nav:hover{ background:var(--accent-bg); color:var(--accent-strong); }
+  .date-weekdays{
+    display:grid; grid-template-columns:repeat(7,1fr); text-align:center;
+    font-size:.68rem; color:var(--text-faint); margin-bottom:4px;
+  }
+  .date-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+  .date-cell{
+    aspect-ratio:1; display:flex; align-items:center; justify-content:center;
+    border-radius:6px; font-size:.78rem; font-variant-numeric:tabular-nums;
+    color:var(--text-dim); background:transparent; border:1px solid transparent; cursor:pointer;
+  }
+  .date-cell:hover{ background:var(--accent-bg); color:var(--accent-strong); }
+  .date-cell.blank{ visibility:hidden; cursor:default; }
+  .date-cell.disabled{
+    color:var(--text-faint); opacity:.35; cursor:not-allowed; pointer-events:none; background:transparent;
+  }
+  .date-cell.today{ border-color:var(--accent); }
+  .date-cell.selected{ background:var(--accent-bg); color:var(--accent-strong); font-weight:700; }
+
+  .entry-table{ width:100%; border-collapse:collapse; margin-bottom:14px; }
+  .entry-table th{ font-size:.72rem; color:var(--text-faint); text-align:left; padding:0 6px 6px; font-weight:600; }
+  .entry-table td{ padding:4px 6px; }
+  .entry-idx{ width:1.6em; color:var(--text-faint); font-variant-numeric:tabular-nums; text-align:center; }
+  .entry-item, .entry-ed{
+    width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--border);
+    background:var(--item-bg); color:var(--text); font:inherit; font-size:.82rem;
+  }
+  .entry-ed{ font-variant-numeric:tabular-nums; }
+
+  .entry-actions{ display:flex; justify-content:flex-end; }
+  #entrySubmit{
+    padding:10px 22px; border-radius:9px; border:1px solid var(--border);
+    background:var(--accent-bg); color:var(--accent-strong); font:inherit; font-weight:700;
+    cursor:pointer;
+  }
+  #entrySubmit:hover{ filter:brightness(1.1); }
+  #entrySubmit:disabled{ opacity:.6; cursor:default; }
+
+  .entry-msg{ margin-top:10px; font-size:.78rem; min-height:1.1em; }
+  .entry-msg.ok{ color:#7ee2a6; }
+  .entry-msg.warn{ color:#e3c98f; }
+  .entry-msg.error{ color:#ff8a80; }
+
+  @media (max-width:520px){
+    .modal-panel.entry{ padding:18px 14px; }
+    .entry-table th:first-child, .entry-idx{ display:none; }
+  }
 </style>
 </head><body>
 
@@ -289,9 +418,55 @@
 
 <img class="side-art" id="sideArt" alt="">
 
+<button type="button" class="upload-trigger" id="uploadTrigger">點我上傳成交結果</button>
+
+<div class="modal-overlay" id="passwordOverlay" hidden>
+  <div class="modal-panel password">
+    <button type="button" class="modal-close" id="passwordClose" aria-label="關閉">×</button>
+    <div class="modal-title">請輸入密碼</div>
+    <div class="password-row">
+      <input type="password" id="passwordInput" placeholder="密碼" autocomplete="off">
+      <button type="button" id="passwordConfirm">確認</button>
+    </div>
+    <div class="password-error" id="passwordError"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="entryOverlay" hidden>
+  <div class="modal-panel entry">
+    <button type="button" class="modal-close" id="entryClose" aria-label="關閉">×</button>
+    <div class="modal-title">上傳成交結果</div>
+    <div class="entry-date-row">
+      <label for="entryDate">日期</label>
+      <div class="date-picker" id="datePicker">
+        <input type="text" id="entryDate" readonly autocomplete="off" placeholder="選擇日期">
+        <div class="date-popover" id="datePopover" hidden>
+          <div class="date-popover-head">
+            <button type="button" class="date-nav" id="datePrev" aria-label="上個月">‹</button>
+            <span id="dateMonthLabel"></span>
+            <button type="button" class="date-nav" id="dateNext" aria-label="下個月">›</button>
+          </div>
+          <div class="date-weekdays">
+            <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+          </div>
+          <div class="date-grid" id="dateGrid"></div>
+        </div>
+      </div>
+      <span class="entry-date-hint">（僅開放週三／週六）</span>
+    </div>
+    <table class="entry-table">
+      <thead><tr><th>商品</th><th>拍賣品名稱</th><th>成交ED</th></tr></thead>
+      <tbody id="entryRows"></tbody>
+    </table>
+    <div class="entry-actions">
+      <button type="button" id="entrySubmit">提交</button>
+    </div>
+    <div class="entry-msg" id="entryMsg"></div>
+  </div>
+</div>
 
 <script>
-  const DATA = [{"name":"層級一","items":[{"name":"一般彈匣魔方","min":607753125,"max":1276281562,"history":[607753125,738727721,804057383,840000000,1000000000,1276281562]},{"name":"黑色碎片2個","min":1039464085,"max":1039464085,"history":[1039464085]},{"name":"[阿利爾] 防具選項轉換石3個","min":281420083,"max":893397093,"history":[281420083,661500000,893397093]},{"name":"[阿利爾] 防具選項備份卷1個","min":252000000,"max":252000000,"history":[252000000]},{"name":"[阿利爾] 核心備份模塊1個","min":0,"max":0,"history":[]},{"name":"每周鍛造材料1000個","min":422130125,"max":1100000000,"history":[422130125,1100000000]}]},{"name":"層級二","items":[{"name":"一般彈匣選擇箱","min":0,"max":0,"history":[]},{"name":"黑色碎片4個","min":525000000,"max":670000000,"history":[525000000,670000000]},{"name":"[阿利爾] 防具選項轉換石5個","min":600000000,"max":1215506250,"history":[600000000,1102500000,1102500000,1157625000,1215506250]},{"name":"[阿利爾] 防具選項備份卷3個","min":703550211,"max":1215506250,"history":[703550211,765768937,1215506250]},{"name":"[阿利爾] 核心備份模塊3個","min":0,"max":0,"history":[]},{"name":"核心備份模塊1個","min":15000000,"max":330750000,"history":[15000000,26250000,100000000,100000000,105000000,330750000]},{"name":"每周鍛造材料2000個","min":864388452,"max":864388452,"history":[864388452]}]},{"name":"層級三","items":[{"name":"核心1個","min":0,"max":0,"history":[]},{"name":"[阿利爾] 內布隆原型選擇箱","min":0,"max":0,"history":[]},{"name":"超彈匣魔方","min":2205000000,"max":2205000000,"history":[2205000000]},{"name":"[阿利爾] 防具選項轉換石10個","min":3000000000,"max":3000000000,"history":[3000000000]},{"name":"支援 & 戰鬥 & 通用彈匣選擇箱","min":0,"max":0,"history":[]},{"name":"[阿利爾] 核心備份模塊10個","min":0,"max":0,"history":[]},{"name":"核心備份模塊5個","min":1575000000,"max":1575000000,"history":[1575000000]}]},{"name":"層級四","items":[{"name":"穩定的核心1個","min":18573083924,"max":26532977040,"history":[18573083924,26532977040]},{"name":"內布隆原型選擇箱","min":0,"max":0,"history":[]},{"name":"超彈匣選擇箱","min":0,"max":0,"history":[]},{"name":"[阿利爾] 1%電路T板選擇箱","min":0,"max":0,"history":[]},{"name":"[阿利爾] 1%電路L板選擇箱","min":0,"max":0,"history":[]},{"name":"[阿利爾] 防具選項轉換石15個","min":0,"max":0,"history":[]},{"name":"[阿利爾] 核心備份模塊15個","min":0,"max":0,"history":[]},{"name":"核心備份模塊7個","min":0,"max":0,"history":[]}]},{"name":"層級五","items":[{"name":"[阿利爾] 死級詞條升級券1個","min":0,"max":0,"history":[]},{"name":"[阿利爾] 防具詞條升級券1個","min":0,"max":0,"history":[]},{"name":"[阿利爾] 複製電路選擇箱","min":0,"max":0,"history":[]},{"name":"[阿利爾] 防具選項轉換石20個","min":0,"max":0,"history":[]},{"name":"[阿利爾] 核心備份模塊20個","min":0,"max":0,"history":[]},{"name":"核心備份模塊10個","min":150000000,"max":3307500000,"history":[150000000,3307500000,3307500000]}]}];
+  const DATA = [{"name":"層級一","items":[{"name":"一般彈匣魔方","min":607753125,"max":1276281562,"history":[607753125,738727721,804057383,840000000,1000000000,1276281562]},{"name":"黑色碎片2個","min":1039464085,"max":1039464085,"history":[1039464085]},{"name":"[阿利爾] 防具選項轉換石3個","min":281420083,"max":893397093,"history":[281420083,661500000,893397093]},{"name":"[阿利爾] 防具選項備份卷1個","min":252000000,"max":252000000,"history":[252000000]},{"name":"[阿利爾] 核心備份模塊1個","min":0,"max":0,"history":[]},{"name":"每周鍛造材料1000個","min":422130125,"max":1100000000,"history":[422130125,1100000000]}]},{"name":"層級二","items":[{"name":"一般彈匣選擇箱","min":0,"max":0,"history":[]},{"name":"黑色碎片4個","min":525000000,"max":670000000,"history":[525000000,670000000]},{"name":"[阿利爾] 防具選項轉換石5個","min":600000000,"max":1215506250,"history":[600000000,1102500000,1102500000,1157625000,1215506250]},{"name":"[阿利爾] 防具選項備份卷3個","min":703550211,"max":1215506250,"history":[703550211,765768937,1215506250]},{"name":"[阿利爾] 核心備份模塊3個","min":0,"max":0,"history":[]},{"name":"核心備份模塊1個","min":15000000,"max":330750000,"history":[15000000,26250000,100000000,100000000,105000000,330750000]},{"name":"每周鍛造材料2000個","min":864388452,"max":864388452,"history":[864388452]}]},{"name":"層級三","items":[{"name":"核心1個","min":18573083924,"max":26532977040,"history":[18573083924,26532977040]},{"name":"[阿利爾] 內布隆原型選擇箱","min":0,"max":0,"history":[]},{"name":"超彈匣魔方","min":2205000000,"max":2205000000,"history":[2205000000]},{"name":"[阿利爾] 防具選項轉換石10個","min":3000000000,"max":3000000000,"history":[3000000000]},{"name":"支援 & 戰鬥 & 通用彈匣選擇箱","min":0,"max":0,"history":[]},{"name":"[阿利爾] 核心備份模塊10個","min":0,"max":0,"history":[]},{"name":"核心備份模塊5個","min":1575000000,"max":1575000000,"history":[1575000000]}]},{"name":"層級四","items":[{"name":"穩定的核心1個","min":0,"max":0,"history":[]},{"name":"內布隆原型選擇箱","min":0,"max":0,"history":[]},{"name":"超彈匣選擇箱","min":0,"max":0,"history":[]},{"name":"[阿利爾] 1%電路T板選擇箱","min":0,"max":0,"history":[]},{"name":"[阿利爾] 1%電路L板選擇箱","min":0,"max":0,"history":[]},{"name":"[阿利爾] 防具選項轉換石15個","min":0,"max":0,"history":[]},{"name":"[阿利爾] 核心備份模塊15個","min":0,"max":0,"history":[]},{"name":"核心備份模塊7個","min":0,"max":0,"history":[]}]},{"name":"層級五","items":[{"name":"[阿利爾] 死級詞條升級券1個","min":0,"max":0,"history":[]},{"name":"[阿利爾] 防具詞條升級券1個","min":0,"max":0,"history":[]},{"name":"[阿利爾] 複製電路選擇箱","min":0,"max":0,"history":[]},{"name":"[阿利爾] 防具選項轉換石20個","min":0,"max":0,"history":[]},{"name":"[阿利爾] 核心備份模塊20個","min":0,"max":0,"history":[]},{"name":"核心備份模塊10個","min":150000000,"max":3307500000,"history":[150000000,3307500000,3307500000]}]}];
 
   const ROMAN = {"層級一":"I","層級二":"II","層級三":"III","層級四":"IV","層級五":"V"};
   const SNAPSHOT_DATE = "2026-09-26";
@@ -504,6 +679,272 @@
   const sideArt = document.getElementById('sideArt');
   sideArt.addEventListener('load', () => sideArt.classList.add('loaded'));
   sideArt.src = SIDE_ART[Math.floor(Math.random() * SIDE_ART.length)];
+
+  // ---- 上傳成交結果 ----
+  const UPLOAD_PASSWORD = 'ELF550';
+  let fileHandle = null; // 本次瀏覽器分頁選過一次檔案後即可重複使用
+  let unlocked = false; // 本次頁面（未重新整理前）已驗證過密碼
+
+  const uploadTrigger = document.getElementById('uploadTrigger');
+  const passwordOverlay = document.getElementById('passwordOverlay');
+  const passwordInput = document.getElementById('passwordInput');
+  const passwordConfirm = document.getElementById('passwordConfirm');
+  const passwordClose = document.getElementById('passwordClose');
+  const passwordError = document.getElementById('passwordError');
+  const entryOverlay = document.getElementById('entryOverlay');
+  const entryClose = document.getElementById('entryClose');
+  const entryDate = document.getElementById('entryDate');
+  const entryRows = document.getElementById('entryRows');
+  const entrySubmit = document.getElementById('entrySubmit');
+  const entryMsg = document.getElementById('entryMsg');
+
+  function openOverlay(el){
+    el.hidden = false;
+    requestAnimationFrame(() => el.classList.add('show'));
+  }
+  function closeOverlay(el){
+    el.classList.remove('show');
+    if(el.id === 'entryOverlay') closeDatePopover();
+    setTimeout(() => { el.hidden = true; }, 250);
+  }
+
+  function handleUploadTrigger(){
+    if(unlocked){ openEntryModal(); return; }
+    openPasswordModal();
+  }
+
+  function openPasswordModal(){
+    passwordInput.value = '';
+    passwordError.textContent = '';
+    openOverlay(passwordOverlay);
+    setTimeout(() => passwordInput.focus(), 50);
+  }
+
+  function checkPassword(){
+    if(passwordInput.value === UPLOAD_PASSWORD){
+      unlocked = true;
+      closeOverlay(passwordOverlay);
+      openEntryModal();
+    } else {
+      passwordError.textContent = '密碼錯誤';
+      passwordInput.value = '';
+      passwordInput.focus();
+    }
+  }
+
+  function todayStr(){
+    return fmtDate(new Date());
+  }
+
+  function fmtDate(d){
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }
+
+  // 只開放週三(3)、週六(6)可選
+  const ALLOWED_DAYS = [3, 6];
+  function nearestAllowedDate(dateStr){
+    const d = new Date(dateStr + 'T00:00:00');
+    while(!ALLOWED_DAYS.includes(d.getDay())) d.setDate(d.getDate() + 1);
+    return fmtDate(d);
+  }
+
+  // ---- 自訂日期選擇器（僅週三／週六可點選，其餘反灰） ----
+  const datePicker = document.getElementById('datePicker');
+  const datePopover = document.getElementById('datePopover');
+  const dateGrid = document.getElementById('dateGrid');
+  const dateMonthLabel = document.getElementById('dateMonthLabel');
+  const datePrev = document.getElementById('datePrev');
+  const dateNext = document.getElementById('dateNext');
+  let calendarViewDate = new Date();
+
+  function renderCalendar(){
+    const year = calendarViewDate.getFullYear();
+    const month = calendarViewDate.getMonth();
+    dateMonthLabel.textContent = `${year}年${month + 1}月`;
+
+    const startWeekday = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const selected = entryDate.value;
+    const todayIso = todayStr();
+
+    let html = '';
+    for(let i = 0; i < startWeekday; i++) html += '<span class="date-cell blank"></span>';
+    for(let day = 1; day <= daysInMonth; day++){
+      const cellDate = new Date(year, month, day);
+      const iso = fmtDate(cellDate);
+      const cls = ['date-cell'];
+      if(!ALLOWED_DAYS.includes(cellDate.getDay())) cls.push('disabled');
+      if(iso === todayIso) cls.push('today');
+      if(iso === selected) cls.push('selected');
+      html += `<span class="${cls.join(' ')}" data-date="${iso}">${day}</span>`;
+    }
+    dateGrid.innerHTML = html;
+  }
+
+  function openDatePopover(){
+    const base = entryDate.value || nearestAllowedDate(todayStr());
+    calendarViewDate = new Date(base + 'T00:00:00');
+    renderCalendar();
+    datePopover.hidden = false;
+  }
+  function closeDatePopover(){ datePopover.hidden = true; }
+
+  function buildItemOptions(){
+    let html = '<option value="">— 請選擇 —</option>';
+    DATA.forEach((tier, tierIdx) => {
+      html += `<optgroup label="${tier.name}">`;
+      tier.items.forEach((it, itemIdx) => {
+        html += `<option value="${tierIdx}-${itemIdx}">${it.name}</option>`;
+      });
+      html += '</optgroup>';
+    });
+    return html;
+  }
+
+  function buildEntryRows(){
+    const optionsHtml = buildItemOptions();
+    entryRows.innerHTML = [1, 2, 3, 4].map(n => `
+      <tr>
+        <td class="entry-idx">${n}</td>
+        <td><select class="entry-item">${optionsHtml}</select></td>
+        <td><input type="number" class="entry-ed" min="0" step="1" placeholder="ED"></td>
+      </tr>
+    `).join('');
+  }
+
+  function openEntryModal(){
+    buildEntryRows();
+    entryDate.value = nearestAllowedDate(todayStr());
+    entryMsg.textContent = '';
+    entryMsg.className = 'entry-msg';
+    openOverlay(entryOverlay);
+  }
+
+  async function ensureFileHandle(){
+    if(fileHandle) return fileHandle;
+    if(!window.showOpenFilePicker) return null;
+    try{
+      const [handle] = await window.showOpenFilePicker({
+        types: [{ description: 'HTML', accept: { 'text/html': ['.html'] } }],
+        excludeAcceptAllOption: false,
+        multiple: false,
+      });
+      let perm = await handle.queryPermission({ mode: 'readwrite' });
+      if(perm !== 'granted') perm = await handle.requestPermission({ mode: 'readwrite' });
+      if(perm !== 'granted') return null;
+      fileHandle = handle;
+      return fileHandle;
+    }catch(err){
+      return null;
+    }
+  }
+
+  async function submitEntries(){
+    const date = entryDate.value || todayStr();
+    const rows = Array.from(entryRows.querySelectorAll('tr')).map(tr => ({
+      key: tr.querySelector('.entry-item').value,
+      ed: tr.querySelector('.entry-ed').value,
+    })).filter(r => r.key && r.ed !== '' && Number(r.ed) > 0);
+
+    if(!rows.length){
+      entryMsg.textContent = '請至少填寫一筆成交紀錄';
+      entryMsg.className = 'entry-msg error';
+      return;
+    }
+
+    entrySubmit.disabled = true;
+    entryMsg.textContent = '處理中…';
+    entryMsg.className = 'entry-msg';
+
+    try{
+      const handle = await ensureFileHandle();
+      if(!handle){
+        const text = rows.map(r => {
+          const [t, i] = r.key.split('-').map(Number);
+          return `${date}\t${DATA[t].items[i].name}\t${r.ed}`;
+        }).join('\n');
+        await navigator.clipboard.writeText(text);
+        entryMsg.textContent = '此瀏覽器不支援直接寫入檔案，已複製文字到剪貼簿，請手動貼到 sheet.html';
+        entryMsg.className = 'entry-msg warn';
+        entrySubmit.disabled = false;
+        return;
+      }
+
+      const file = await handle.getFile();
+      const text = await file.text();
+      const match = text.match(/const DATA = (\[[\s\S]*?\]);/);
+      if(!match) throw new Error('在檔案中找不到 DATA 陣列');
+      const fileData = JSON.parse(match[1]);
+
+      rows.forEach(r => {
+        const [t, i] = r.key.split('-').map(Number);
+        const item = fileData[t].items[i];
+        if(!Array.isArray(item.historyDates) || item.historyDates.length !== item.history.length){
+          item.historyDates = item.history.map(() => SNAPSHOT_DATE);
+        }
+        item.history.push(Number(r.ed));
+        item.historyDates.push(date);
+        item.min = Math.min(...item.history);
+        item.max = Math.max(...item.history);
+      });
+
+      const newText = text.slice(0, match.index) + `const DATA = ${JSON.stringify(fileData)};` + text.slice(match.index + match[0].length);
+      const writable = await handle.createWritable();
+      await writable.write(newText);
+      await writable.close();
+
+      rows.forEach(r => {
+        const [t, i] = r.key.split('-').map(Number);
+        DATA[t].items[i] = fileData[t].items[i];
+      });
+      render();
+
+      entryMsg.textContent = '已更新並寫入 sheet.html！';
+      entryMsg.className = 'entry-msg ok';
+      setTimeout(() => closeOverlay(entryOverlay), 900);
+    }catch(err){
+      entryMsg.textContent = '寫入失敗：' + err.message;
+      entryMsg.className = 'entry-msg error';
+    }finally{
+      entrySubmit.disabled = false;
+    }
+  }
+
+  uploadTrigger.addEventListener('click', handleUploadTrigger);
+  passwordConfirm.addEventListener('click', checkPassword);
+  passwordInput.addEventListener('keydown', e => { if(e.key === 'Enter') checkPassword(); });
+  passwordClose.addEventListener('click', () => closeOverlay(passwordOverlay));
+  entryClose.addEventListener('click', () => closeOverlay(entryOverlay));
+  entrySubmit.addEventListener('click', submitEntries);
+  entryDate.addEventListener('click', () => {
+    if(datePopover.hidden) openDatePopover(); else closeDatePopover();
+  });
+  datePrev.addEventListener('click', () => {
+    calendarViewDate.setMonth(calendarViewDate.getMonth() - 1);
+    renderCalendar();
+  });
+  dateNext.addEventListener('click', () => {
+    calendarViewDate.setMonth(calendarViewDate.getMonth() + 1);
+    renderCalendar();
+  });
+  dateGrid.addEventListener('click', e => {
+    const cell = e.target.closest('.date-cell');
+    if(!cell || cell.classList.contains('disabled') || cell.classList.contains('blank')) return;
+    entryDate.value = cell.dataset.date;
+    closeDatePopover();
+  });
+  document.addEventListener('click', e => {
+    if(!datePopover.hidden && !datePicker.contains(e.target)) closeDatePopover();
+  });
+  [passwordOverlay, entryOverlay].forEach(overlay => {
+    overlay.addEventListener('click', e => { if(e.target === overlay) closeOverlay(overlay); });
+  });
+  document.addEventListener('keydown', e => {
+    if(e.key !== 'Escape') return;
+    if(passwordOverlay.classList.contains('show')) closeOverlay(passwordOverlay);
+    if(entryOverlay.classList.contains('show')) closeOverlay(entryOverlay);
+  });
 </script>
 
 </body></html>
