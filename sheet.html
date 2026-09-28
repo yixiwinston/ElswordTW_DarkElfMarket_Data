@@ -59,16 +59,18 @@
   .page-nav .page-divider{ height:1px; background:var(--border); margin:8px 4px; }
 
   .page-nav-toggle{
-    position:fixed; left:0; top:96px; z-index:31;
-    width:32px; height:60px; border-radius:0 10px 10px 0;
+    position:fixed; left:0; top:14px; z-index:31;
+    display:flex; align-items:center; gap:7px;
+    padding:10px 16px 10px 12px; border-radius:0 999px 999px 0;
     background:var(--surface-2); border:1px solid var(--border); border-left:none;
-    color:var(--text-dim); cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
+    color:var(--text-dim); font:inherit; font-size:.8rem; font-weight:700;
+    letter-spacing:.02em; cursor:pointer; box-shadow:var(--shadow);
     transition:left .25s ease, background-color .15s ease, color .15s ease;
   }
   .page-nav-toggle:hover{ background:var(--accent-bg); color:var(--accent-strong); }
   .page-nav-toggle .arrow{
-    width:8px; height:8px; border-right:2px solid currentColor; border-bottom:2px solid currentColor;
+    flex:none; width:8px; height:8px;
+    border-right:2px solid currentColor; border-bottom:2px solid currentColor;
     transform:rotate(-45deg); transition:transform .25s ease;
   }
   .page-nav.open + .page-nav-toggle{ left:min(240px,82vw); }
@@ -237,6 +239,7 @@
   footer .rule{ border:none; border-top:1px solid var(--border); margin:0 0 16px; }
 
   @media (max-width:520px){
+    .topbar{ padding-left:76px; }
     .topbar-inner{ flex-direction:column; align-items:stretch; }
     .lookup{ max-width:none; }
   }
@@ -255,7 +258,7 @@
 <nav class="page-nav" id="pageNav">
   <div class="page-nav-title">頁面</div>
 </nav>
-<button type="button" class="page-nav-toggle" id="pageNavToggle" aria-label="展開頁面清單" aria-expanded="false"><span class="arrow"></span></button>
+<button type="button" class="page-nav-toggle" id="pageNavToggle" aria-label="展開頁面清單" aria-expanded="false"><span class="arrow"></span><span>頁面</span></button>
 <div class="page-nav-backdrop" id="pageNavBackdrop"></div>
 
 <header class="topbar">
