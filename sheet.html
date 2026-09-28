@@ -73,6 +73,9 @@
     border-right:2px solid currentColor; border-bottom:2px solid currentColor;
     transform:rotate(-45deg); transition:transform .25s ease;
   }
+  .page-nav-toggle #pageNavLabel{
+    max-width:min(46vw,180px); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
   .page-nav.open + .page-nav-toggle{ left:min(240px,82vw); }
   .page-nav.open + .page-nav-toggle .arrow{ transform:rotate(135deg); }
 
@@ -239,7 +242,7 @@
   footer .rule{ border:none; border-top:1px solid var(--border); margin:0 0 16px; }
 
   @media (max-width:520px){
-    .topbar{ padding-left:76px; }
+    .topbar{ padding-left:min(50vw,190px); }
     .topbar-inner{ flex-direction:column; align-items:stretch; }
     .lookup{ max-width:none; }
   }
@@ -258,7 +261,7 @@
 <nav class="page-nav" id="pageNav">
   <div class="page-nav-title">頁面</div>
 </nav>
-<button type="button" class="page-nav-toggle" id="pageNavToggle" aria-label="展開頁面清單" aria-expanded="false"><span class="arrow"></span><span>頁面</span></button>
+<button type="button" class="page-nav-toggle" id="pageNavToggle" aria-label="展開頁面清單" aria-expanded="false"><span class="arrow"></span><span id="pageNavLabel">歷史成交總集</span></button>
 <div class="page-nav-backdrop" id="pageNavBackdrop"></div>
 
 <header class="topbar">
@@ -392,6 +395,7 @@
 
     lookup.innerHTML = opts;
     renderPageNav(allDates);
+    updateToggleLabel();
 
     document.getElementById('stats').innerHTML = `
       <div class="stat"><b>${totalItems}</b><span>總拍賣品</span></div>
@@ -411,9 +415,16 @@
     nav.innerHTML = html;
   }
 
+  function updateToggleLabel(){
+    const active = document.querySelector('.page-link.active');
+    const label = document.getElementById('pageNavLabel');
+    if(active && label) label.textContent = active.textContent;
+  }
+
   function filterByDate(date){
     document.getElementById('lookup').value = '';
     document.querySelectorAll('.page-link').forEach(a => a.classList.toggle('active', a.dataset.date === date));
+    updateToggleLabel();
     const emptyState = document.getElementById('emptyState');
     document.querySelectorAll('li.row').forEach(li => li.classList.remove('highlight'));
 
@@ -443,6 +454,7 @@
     const emptyState = document.getElementById('emptyState');
     document.querySelectorAll('li.row').forEach(li => li.classList.remove('highlight'));
     document.querySelectorAll('.page-link').forEach(a => a.classList.toggle('active', a.dataset.date === ''));
+    updateToggleLabel();
 
     if(!key){
       document.querySelectorAll('details.tier').forEach(d => { d.hidden = false; d.open = true; });
