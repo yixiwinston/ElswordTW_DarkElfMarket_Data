@@ -20,12 +20,52 @@
   *{ box-sizing:border-box; }
   body{
     margin:0;
-    background:var(--bg);
+    padding-left:200px;
+    background-color:var(--bg);
+    background-image:url('image/25-Rnew.png');
+    background-size:cover;
+    background-position:center top;
+    background-repeat:no-repeat;
+    background-attachment:fixed;
     color:var(--text);
     font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif;
     -webkit-font-smoothing:antialiased;
   }
   h1,h2{ text-wrap:balance; margin:0; font-family:'Noto Serif TC','PMingLiU',serif; }
+
+  .page-nav{
+    position:fixed; left:0; top:0; bottom:0; width:200px; z-index:10;
+    background:color-mix(in srgb, var(--surface) 92%, transparent);
+    backdrop-filter:blur(10px);
+    border-right:1px solid var(--border);
+    padding:20px 14px; overflow-y:auto;
+    display:flex; flex-direction:column; gap:4px;
+  }
+  .page-nav-title{
+    font-size:.68rem; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--text-faint); font-weight:700; padding:0 12px 10px;
+  }
+  .page-nav .page-link{
+    display:block; padding:9px 12px; border-radius:8px;
+    color:var(--text-dim); text-decoration:none; font-size:.86rem;
+    font-weight:600; cursor:pointer; white-space:nowrap;
+    transition:background-color .15s ease, color .15s ease;
+  }
+  .page-nav .page-link:hover{ background:var(--surface-2); color:var(--text); }
+  .page-nav .page-link.active{ background:var(--accent-bg); color:var(--accent-strong); }
+  .page-nav .page-divider{ height:1px; background:var(--border); margin:8px 4px; }
+
+  @media (max-width:760px){
+    body{ padding-left:0; }
+    .page-nav{
+      position:sticky; left:auto; top:0; bottom:auto; width:auto; height:auto;
+      flex-direction:row; align-items:center; overflow-x:auto; overflow-y:hidden;
+      border-right:none; border-bottom:1px solid var(--border);
+      padding:10px 14px; z-index:11;
+    }
+    .page-nav-title{ padding:0 10px 0 0; }
+    .page-nav .page-divider{ width:1px; height:20px; margin:0 4px; flex:none; }
+  }
 
   .topbar{
     position:sticky; top:0; z-index:10;
@@ -197,6 +237,10 @@
 </style>
 </head><body>
 
+<nav class="page-nav" id="pageNav">
+  <div class="page-nav-title">頁面</div>
+</nav>
+
 <header class="topbar">
   <div class="topbar-inner">
     <div class="title-block">
@@ -250,11 +294,19 @@
     return null;
   }
 
+  function itemDates(item){
+    if(!item.history.length) return [];
+    const set = new Set();
+    item.history.forEach((v, i) => set.add((item.historyDates && item.historyDates[i]) || SNAPSHOT_DATE));
+    return Array.from(set);
+  }
+
   function renderRow(item, tierIdx, itemIdx){
     const hasData = item.history.length > 0;
     const li = document.createElement('li');
     li.className = 'row';
     li.dataset.key = tierIdx + '-' + itemIdx;
+    li.dataset.dates = itemDates(item).join(',');
 
     let priceTableHtml;
     if(hasData){
@@ -289,10 +341,14 @@
     main.innerHTML = '';
     let opts = '<option value="">全部拍賣品</option>';
     let totalItems = 0, withData = 0, noData = 0;
+    const allDates = new Set();
 
     DATA.forEach((tier, tierIdx) => {
       totalItems += tier.items.length;
-      tier.items.forEach(it => (it.history.length > 0 || it.max > 0) ? withData++ : noData++);
+      tier.items.forEach(it => {
+        (it.history.length > 0 || it.max > 0) ? withData++ : noData++;
+        itemDates(it).forEach(d => allDates.add(d));
+      });
 
       const details = document.createElement('details');
       details.className = 'tier';
@@ -315,6 +371,7 @@
     });
 
     lookup.innerHTML = opts;
+    renderPageNav(allDates);
 
     document.getElementById('stats').innerHTML = `
       <div class="stat"><b>${totalItems}</b><span>總拍賣品</span></div>
@@ -324,9 +381,48 @@
     `;
   }
 
+  function renderPageNav(dateSet){
+    const nav = document.getElementById('pageNav');
+    const dates = Array.from(dateSet).sort().reverse();
+    let html = '<div class="page-nav-title">頁面</div>';
+    html += '<a class="page-link active" data-date="">歷史成交總集</a>';
+    html += '<div class="page-divider"></div>';
+    html += dates.map(d => `<a class="page-link" data-date="${d}">${d}成交紀錄</a>`).join('');
+    nav.innerHTML = html;
+  }
+
+  function filterByDate(date){
+    document.getElementById('lookup').value = '';
+    document.querySelectorAll('.page-link').forEach(a => a.classList.toggle('active', a.dataset.date === date));
+    const emptyState = document.getElementById('emptyState');
+    document.querySelectorAll('li.row').forEach(li => li.classList.remove('highlight'));
+
+    if(!date){
+      document.querySelectorAll('details.tier').forEach(d => { d.hidden = false; d.open = true; });
+      document.querySelectorAll('li.row').forEach(li => li.hidden = false);
+      emptyState.classList.remove('show');
+      return;
+    }
+
+    let anyVisible = false;
+    document.querySelectorAll('details.tier').forEach(tier => {
+      let tierHasVisible = false;
+      tier.querySelectorAll('li.row').forEach(li => {
+        const dates = li.dataset.dates ? li.dataset.dates.split(',') : [];
+        const match = dates.includes(date);
+        li.hidden = !match;
+        if(match){ tierHasVisible = true; anyVisible = true; }
+      });
+      tier.hidden = !tierHasVisible;
+      tier.open = tierHasVisible;
+    });
+    emptyState.classList.toggle('show', !anyVisible);
+  }
+
   function goToItem(key){
     const emptyState = document.getElementById('emptyState');
     document.querySelectorAll('li.row').forEach(li => li.classList.remove('highlight'));
+    document.querySelectorAll('.page-link').forEach(a => a.classList.toggle('active', a.dataset.date === ''));
 
     if(!key){
       document.querySelectorAll('details.tier').forEach(d => { d.hidden = false; d.open = true; });
@@ -351,6 +447,12 @@
 
   render();
   document.getElementById('lookup').addEventListener('change', e => goToItem(e.target.value));
+  document.getElementById('pageNav').addEventListener('click', e => {
+    const link = e.target.closest('.page-link');
+    if(!link) return;
+    e.preventDefault();
+    filterByDate(link.dataset.date);
+  });
 
   const SIDE_ART = ['image/Ai_restore_Peta.png', 'image/Ai_restore_Peta_2.png'];
   const sideArt = document.getElementById('sideArt');
