@@ -1,0 +1,344 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>黑市成交錄</title>
+<style>:root{color-scheme:dark}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#000000;color:#f5f5f5}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700;900&family=Noto+Sans+TC:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --bg:#000000;
+    --surface:#1a1a1a;
+    --surface-2:#3a3a3a;
+    --item-bg:#2b2b2b;
+    --border:#4a4a4a;
+    --text:#f5f5f5;
+    --text-dim:#d4d4d8;
+    --text-faint:#a3a3a8;
+    --accent:#a87ee6;
+    --accent-strong:#d4b8f5;
+    --accent-bg:#3a2f5c;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 28px -14px rgba(0,0,0,.7);
+  }
+
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2{ text-wrap:balance; margin:0; font-family:'Noto Serif TC','PMingLiU',serif; }
+
+  .topbar{
+    position:sticky; top:0; z-index:10;
+    background:color-mix(in srgb, var(--bg) 86%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom:1px solid var(--border);
+    padding:18px 20px;
+  }
+  .topbar-inner{
+    max-width:920px; margin:0 auto;
+    display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:16px 24px;
+  }
+  .title-block{ display:flex; flex-direction:column; gap:4px; min-width:220px; }
+  .eyebrow{
+    font-size:.72rem; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent); font-weight:600;
+  }
+  .title-block h1{ font-size:1.55rem; font-weight:900; color:var(--text); }
+  .title-block p{ margin:0; font-size:.85rem; color:var(--text-dim); }
+
+  .lookup{ position:relative; flex:1; min-width:200px; max-width:280px; }
+  .lookup svg{ position:absolute; left:12px; top:50%; transform:translateY(-50%); width:15px; height:15px; color:var(--text-faint); pointer-events:none; }
+  .lookup::after{
+    content:""; position:absolute; right:13px; top:50%; width:8px; height:8px;
+    border-right:2px solid var(--text-faint); border-bottom:2px solid var(--text-faint);
+    transform:translateY(-70%) rotate(45deg); pointer-events:none;
+  }
+  #lookup{
+    width:100%; padding:10px 34px 10px 34px;
+    border-radius:10px; border:1px solid var(--border);
+    background:var(--surface); color:var(--text);
+    font:inherit; font-size:.86rem; appearance:none; -webkit-appearance:none;
+  }
+  #lookup:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+
+  .stats{ display:flex; gap:10px; flex-wrap:wrap; }
+  .stat{
+    display:flex; flex-direction:column; align-items:flex-start; gap:1px;
+    padding:6px 12px; border-radius:9px; background:var(--surface-2); border:1px solid var(--border);
+    min-width:60px;
+  }
+  .stat b{ font-size:1.02rem; font-variant-numeric:tabular-nums; font-family:'Noto Serif TC',serif; }
+  .stat span{ font-size:.66rem; color:var(--text-dim); letter-spacing:.03em; }
+
+  main{ max-width:920px; margin:0 auto; padding:24px 20px 80px; }
+
+  details.tier{
+    margin-bottom:14px; border:1px solid var(--border); border-radius:12px;
+    background:var(--surface); overflow:hidden;
+  }
+  details.tier[hidden]{ display:none; }
+  summary.tier-head{
+    list-style:none; cursor:pointer; user-select:none;
+    display:flex; align-items:center; gap:12px; padding:14px 16px;
+  }
+  summary.tier-head::-webkit-details-marker{ display:none; }
+  summary.tier-head:focus-visible{ outline:2px solid var(--accent); outline-offset:-2px; }
+  .chevron{
+    flex:none; width:9px; height:9px; border-right:2px solid var(--text-faint); border-bottom:2px solid var(--text-faint);
+    transform:rotate(-45deg); transition:transform .18s ease; margin-right:2px;
+  }
+  details.tier[open] > summary.tier-head .chevron{ transform:rotate(45deg); }
+  .tier-badge{
+    flex:none; width:28px; height:28px; border-radius:50%;
+    background:var(--accent-bg); color:var(--accent-strong);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Noto Serif TC',serif; font-weight:700; font-size:.8rem;
+    border:1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  }
+  summary.tier-head h2{ font-size:1.05rem; font-weight:700; color:var(--text); }
+  summary.tier-head .tier-meta{ margin-left:auto; font-size:.76rem; color:var(--text-faint); font-variant-numeric:tabular-nums; white-space:nowrap; }
+
+  ul.list{ list-style:none; margin:0; padding:10px; display:flex; flex-direction:column; gap:8px; }
+  li.row{
+    padding:12px 14px; border:1px solid var(--border); border-radius:10px;
+    background:var(--item-bg);
+    display:flex; flex-direction:column; gap:6px;
+    transition:background-color .3s ease;
+  }
+  li.row[hidden]{ display:none; }
+  li.row.highlight{ background:var(--accent-bg); border-color:var(--accent); }
+
+  .row-main{ display:flex; align-items:stretch; justify-content:space-between; gap:16px; }
+  .row-name{ font-family:'Noto Serif TC',serif; font-weight:600; font-size:.95rem; padding-top:2px; }
+
+  .price-table{
+    flex:none; width:calc(15em + 4ch); white-space:nowrap;
+    display:flex; flex-direction:column; justify-content:flex-end; align-items:stretch;
+    gap:4px; min-height:2.6em;
+    font-size:.86rem; font-variant-numeric:tabular-nums;
+    border-left:1px solid var(--border); padding-left:14px;
+  }
+  .price-table.two-line{ justify-content:space-between; }
+  .price-table .price-line{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; width:100%; }
+  .price-table .main{ display:flex; align-items:baseline; gap:6px; }
+  .price-table .label{ text-align:left; color:var(--text-faint); }
+  .price-table .value{ text-align:left; font-weight:700; }
+  .price-table .value.min{ color:#7ee2a6; }
+  .price-table .value.max{ color:#ff8a80; }
+  .price-table .abbr{ text-align:right; color:var(--text-faint); font-size:.78rem; font-weight:400; }
+  .price-table.empty{
+    justify-content:center;
+    font-style:italic; color:var(--text-faint); font-weight:400;
+  }
+
+  .hist{ min-height:1.1em; }
+  .hist summary{
+    list-style:none; cursor:pointer; user-select:none;
+    display:flex; align-items:center; gap:4px;
+    font-size:.72rem; color:var(--text-faint);
+  }
+  .hist summary::-webkit-details-marker{ display:none; }
+  .hist summary::before{
+    content:""; flex:none; width:5px; height:5px;
+    border-right:1.5px solid var(--text-faint); border-bottom:1.5px solid var(--text-faint);
+    transform:rotate(-45deg); transition:transform .15s ease;
+  }
+  .hist[open] > summary::before{ transform:rotate(45deg); }
+  .hist[data-empty="true"] summary{ cursor:default; pointer-events:none; opacity:.55; }
+  .hist[data-empty="true"] summary::before{ visibility:hidden; }
+  .hist .chips{ margin-top:6px; }
+
+  .chips{ display:flex; flex-wrap:wrap; gap:6px; }
+  .chips .k{ font-size:.68rem; letter-spacing:.06em; text-transform:uppercase; color:var(--text-faint); margin-right:2px; align-self:center; }
+  .chip{
+    position:relative;
+    font-size:.72rem; padding:3px 9px; border-radius:999px;
+    background:var(--chip-bg, var(--surface-2)); border:1px solid var(--chip-border, var(--border)); color:var(--chip-text, var(--text-dim));
+    font-variant-numeric:tabular-nums; cursor:default;
+  }
+  .chip::after{
+    content:attr(data-date);
+    position:absolute; bottom:calc(100% + 7px); left:50%; transform:translateX(-50%) translateY(4px);
+    background:var(--surface); color:var(--text); border:1px solid var(--border);
+    padding:4px 9px; border-radius:6px; font-size:.68rem; font-weight:600;
+    white-space:nowrap; box-shadow:var(--shadow);
+    opacity:0; visibility:hidden; pointer-events:none;
+    transition:opacity .15s ease, transform .15s ease; z-index:5;
+  }
+  .chip::before{
+    content:""; position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%);
+    border:4px solid transparent; border-top-color:var(--border);
+    opacity:0; visibility:hidden; pointer-events:none; transition:opacity .15s ease; z-index:5;
+  }
+  .chip:hover::after, .chip:focus-visible::after{ opacity:1; visibility:visible; transform:translateX(-50%) translateY(0); }
+  .chip:hover::before, .chip:focus-visible::before{ opacity:1; visibility:visible; }
+
+  .empty-state{ text-align:center; padding:50px 20px; color:var(--text-faint); display:none; }
+  .empty-state.show{ display:block; }
+
+  footer{
+    max-width:920px; margin:0 auto; padding:0 20px 40px; color:var(--text-faint); font-size:.78rem; line-height:1.7;
+  }
+  footer .rule{ border:none; border-top:1px solid var(--border); margin:0 0 16px; }
+
+  @media (max-width:520px){
+    .topbar-inner{ flex-direction:column; align-items:stretch; }
+    .lookup{ max-width:none; }
+  }
+</style>
+</head><body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="title-block">
+      <span class="eyebrow">黑暗精靈黑市 · 拍賣品資料庫</span>
+      <h1>歷史成交總集</h1>
+      <p>依層級整理的最低／最高成交參考價，單位 ED</p>
+    </div>
+    <div class="lookup">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <select id="lookup"></select>
+    </div>
+    <div class="stats" id="stats"></div>
+  </div>
+</header>
+
+<main id="main"></main>
+<div class="empty-state" id="emptyState">找不到符合的拍賣品</div>
+
+<footer>
+  <hr class="rule">
+  資料整理自 Sheet.xlsx →「歷史成交總集」工作表，欄位包含最低／最高價參考與各筆歷史成交紀錄。金額單位皆為 ED；標示「尚無成交紀錄」代表目前尚未有可參考的成交資料。點選右上角下拉選單可快速定位品項，點擊層級標題可展開／摺疊。
+</footer>
+
+<script>
+  const DATA = [{"name":"層級一","items":[{"name":"一般彈匣魔方","min":607753125,"max":1276281562,"history":[607753125,738727721,804057383,840000000,1000000000,1276281562]},{"name":"黑色碎片2個","min":1039464085,"max":1039464085,"history":[1039464085]},{"name":"[阿利爾] 防具選項轉換石3個","min":281420083,"max":893397093,"history":[281420083,661500000,893397093]},{"name":"[阿利爾] 防具選項備份卷1個","min":252000000,"max":252000000,"history":[252000000]},{"name":"[阿利爾] 核心備份模塊1個","min":0,"max":0,"history":[]},{"name":"每周鍛造材料1000個","min":422130125,"max":1100000000,"history":[422130125,1100000000]}]},{"name":"層級二","items":[{"name":"一般彈匣選擇箱","min":0,"max":0,"history":[]},{"name":"黑色碎片4個","min":525000000,"max":670000000,"history":[525000000,670000000]},{"name":"[阿利爾] 防具選項轉換石5個","min":600000000,"max":1215506250,"history":[600000000,1102500000,1102500000,1157625000,1215506250]},{"name":"[阿利爾] 防具選項備份卷3個","min":703550211,"max":1215506250,"history":[703550211,765768937,1215506250]},{"name":"[阿利爾] 核心備份模塊3個","min":0,"max":0,"history":[]},{"name":"核心備份模塊1個","min":15000000,"max":330750000,"history":[15000000,26250000,100000000,100000000,105000000,330750000]},{"name":"每周鍛造材料2000個","min":864388452,"max":864388452,"history":[864388452]}]},{"name":"層級三","items":[{"name":"核心1個","min":0,"max":0,"history":[]},{"name":"[阿利爾] 內布隆原型選擇箱","min":0,"max":0,"history":[]},{"name":"超彈匣魔方","min":2205000000,"max":2205000000,"history":[2205000000]},{"name":"[阿利爾] 防具選項轉換石10個","min":3000000000,"max":3000000000,"history":[3000000000]},{"name":"支援 & 戰鬥 & 通用彈匣選擇箱","min":0,"max":0,"history":[]},{"name":"[阿利爾] 核心備份模塊10個","min":0,"max":0,"history":[]},{"name":"核心備份模塊5個","min":1575000000,"max":1575000000,"history":[1575000000]}]},{"name":"層級四","items":[{"name":"穩定的核心1個","min":18573083924,"max":26532977040,"history":[18573083924,26532977040]},{"name":"內布隆原型選擇箱","min":0,"max":0,"history":[]},{"name":"超彈匣選擇箱","min":0,"max":0,"history":[]},{"name":"[阿利爾] 1%電路T板選擇箱","min":0,"max":0,"history":[]},{"name":"[阿利爾] 1%電路L板選擇箱","min":0,"max":0,"history":[]},{"name":"[阿利爾] 防具選項轉換石15個","min":0,"max":0,"history":[]},{"name":"[阿利爾] 核心備份模塊15個","min":0,"max":0,"history":[]},{"name":"核心備份模塊7個","min":0,"max":0,"history":[]}]},{"name":"層級五","items":[{"name":"[阿利爾] 死級詞條升級券1個","min":0,"max":0,"history":[]},{"name":"[阿利爾] 防具詞條升級券1個","min":0,"max":0,"history":[]},{"name":"[阿利爾] 複製電路選擇箱","min":0,"max":0,"history":[]},{"name":"[阿利爾] 防具選項轉換石20個","min":0,"max":0,"history":[]},{"name":"[阿利爾] 核心備份模塊20個","min":0,"max":0,"history":[]},{"name":"核心備份模塊10個","min":150000000,"max":3307500000,"history":[150000000,3307500000,3307500000]}]}];
+
+  const ROMAN = {"層級一":"I","層級二":"II","層級三":"III","層級四":"IV","層級五":"V"};
+  const SNAPSHOT_DATE = "2026-09-26";
+
+  const DATE_PALETTE = [
+    { bg:'#173626', border:'#2f6b45', text:'#8fe3ab' },
+    { bg:'#17243a', border:'#2f5a9e', text:'#8db4f0' },
+    { bg:'#3a2f17', border:'#8a6a2f', text:'#e3c98f' },
+    { bg:'#3a1730', border:'#8a2f6e', text:'#e38fce' },
+    { bg:'#173a3a', border:'#2f8a8a', text:'#8fe3e3' },
+    { bg:'#2a1a3a', border:'#6a3f9e', text:'#c8a8f0' },
+  ];
+  const dateColorMap = {};
+  let dateColorIdx = 0;
+  function colorForDate(date){
+    if(!dateColorMap[date]) dateColorMap[date] = DATE_PALETTE[dateColorIdx++ % DATE_PALETTE.length];
+    return dateColorMap[date];
+  }
+
+  function fmtAbbrev(n){
+    if(n >= 1e8) return (n/1e8).toFixed(2).replace(/\.?0+$/,'') + '億';
+    if(n >= 1e4) return (n/1e4).toFixed(1).replace(/\.?0+$/,'') + '萬';
+    return null;
+  }
+
+  function renderRow(item, tierIdx, itemIdx){
+    const hasData = item.history.length > 0;
+    const li = document.createElement('li');
+    li.className = 'row';
+    li.dataset.key = tierIdx + '-' + itemIdx;
+
+    let priceTableHtml;
+    if(hasData){
+      const minAbbr = fmtAbbrev(item.min);
+      const minRow = `<div class="price-line"><span class="main"><span class="label">最低</span><span class="value min">${item.min.toLocaleString()}</span></span>${minAbbr ? `<span class="abbr">(${minAbbr})</span>` : ''}</div>`;
+      let maxRow = '';
+      const hasMax = item.history.length > 1;
+      if(hasMax){
+        const maxAbbr = fmtAbbrev(item.max);
+        maxRow = `<div class="price-line"><span class="main"><span class="label">最高</span><span class="value max">${item.max.toLocaleString()}</span></span>${maxAbbr ? `<span class="abbr">(${maxAbbr})</span>` : ''}</div>`;
+      }
+      priceTableHtml = `<div class="price-table${hasMax ? ' two-line' : ''}">${maxRow}${minRow}</div>`;
+    } else {
+      priceTableHtml = `<div class="price-table empty"><span>尚無成交紀錄</span></div>`;
+    }
+
+    const historyHtml = item.history.length
+      ? `<details class="hist"><summary>成交紀錄・${item.history.length}筆</summary><div class="chips">${item.history.map((v, i) => {
+          const date = (item.historyDates && item.historyDates[i]) || SNAPSHOT_DATE;
+          const c = colorForDate(date);
+          return `<span class="chip" tabindex="0" data-date="參考日期：${date}" style="--chip-bg:${c.bg};--chip-border:${c.border};--chip-text:${c.text}">${v.toLocaleString()}</span>`;
+        }).join('')}</div></details>`
+      : `<details class="hist" data-empty="true"><summary>無歷史紀錄</summary></details>`;
+
+    li.innerHTML = `<div class="row-main"><div class="row-name">${item.name}</div>${priceTableHtml}</div>${historyHtml}`;
+    return li;
+  }
+
+  function render(){
+    const main = document.getElementById('main');
+    const lookup = document.getElementById('lookup');
+    main.innerHTML = '';
+    let opts = '<option value="">全部拍賣品</option>';
+    let totalItems = 0, withData = 0, noData = 0;
+
+    DATA.forEach((tier, tierIdx) => {
+      totalItems += tier.items.length;
+      tier.items.forEach(it => (it.history.length > 0 || it.max > 0) ? withData++ : noData++);
+
+      const details = document.createElement('details');
+      details.className = 'tier';
+      details.open = true;
+      details.dataset.tier = tierIdx;
+      details.innerHTML = `<summary class="tier-head">
+        <span class="chevron"></span>
+        <span class="tier-badge">${ROMAN[tier.name] || ''}</span>
+        <h2>${tier.name}</h2>
+        <span class="tier-meta">${tier.items.length} 項</span>
+      </summary>`;
+      const ul = document.createElement('ul');
+      ul.className = 'list';
+      tier.items.forEach((it, itemIdx) => {
+        ul.appendChild(renderRow(it, tierIdx, itemIdx));
+        opts += `<option value="${tierIdx}-${itemIdx}">${tier.name}・${it.name}</option>`;
+      });
+      details.appendChild(ul);
+      main.appendChild(details);
+    });
+
+    lookup.innerHTML = opts;
+
+    document.getElementById('stats').innerHTML = `
+      <div class="stat"><b>${totalItems}</b><span>總拍賣品</span></div>
+      <div class="stat"><b>${DATA.length}</b><span>層級</span></div>
+      <div class="stat"><b>${withData}</b><span>有成交紀錄</span></div>
+      <div class="stat"><b>${noData}</b><span>尚無紀錄</span></div>
+    `;
+  }
+
+  function goToItem(key){
+    const emptyState = document.getElementById('emptyState');
+    document.querySelectorAll('li.row').forEach(li => li.classList.remove('highlight'));
+
+    if(!key){
+      document.querySelectorAll('details.tier').forEach(d => { d.hidden = false; d.open = true; });
+      document.querySelectorAll('li.row').forEach(li => li.hidden = false);
+      emptyState.classList.remove('show');
+      return;
+    }
+
+    const target = document.querySelector(`li.row[data-key="${key}"]`);
+    if(!target){ emptyState.classList.add('show'); return; }
+    emptyState.classList.remove('show');
+
+    document.querySelectorAll('details.tier').forEach(d => d.hidden = true);
+    const parentDetails = target.closest('details.tier');
+    parentDetails.hidden = false;
+    parentDetails.open = true;
+    parentDetails.querySelectorAll('li.row').forEach(li => li.hidden = true);
+    target.hidden = false;
+    target.classList.add('highlight');
+    target.scrollIntoView({ behavior:'smooth', block:'center' });
+  }
+
+  render();
+  document.getElementById('lookup').addEventListener('change', e => goToItem(e.target.value));
+</script>
+
+</body></html>
