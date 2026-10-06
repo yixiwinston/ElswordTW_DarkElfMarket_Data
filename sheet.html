@@ -385,6 +385,59 @@
     .modal-panel.entry{ padding:18px 14px; }
     .entry-table th:first-child, .entry-idx{ display:none; }
   }
+
+  /* ---- 商品成交分布（cluster / 均價走勢） ---- */
+  .row-main.clickable{ cursor:pointer; border-radius:6px; }
+  .row-main.clickable:hover .row-name{ color:var(--accent-strong); }
+  .row-main.clickable:focus-visible{ outline:2px solid var(--accent); outline-offset:4px; }
+  .row-hint{ display:block; margin-top:3px; font-family:'Noto Sans TC',sans-serif; font-size:.68rem; font-weight:400; color:var(--text-faint); }
+
+  .modal-panel.cluster{ max-width:700px; max-height:calc(100vh - 40px); overflow-y:auto; }
+  .modal-panel.cluster .modal-title{ padding-right:34px; margin-bottom:4px; }
+  .cluster-sub{ font-size:.74rem; color:var(--text-faint); margin-bottom:12px; font-variant-numeric:tabular-nums; }
+  .cluster-controls{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-bottom:12px; }
+  .seg{ display:inline-flex; flex-wrap:wrap; border:1px solid var(--border); border-radius:9px; overflow:hidden; }
+  .seg button{
+    padding:6px 11px; background:var(--item-bg); color:var(--text-dim);
+    border:none; border-right:1px solid var(--border);
+    font:inherit; font-size:.76rem; font-weight:600; cursor:pointer;
+  }
+  .seg button:last-child{ border-right:none; }
+  .seg button:hover{ color:var(--text); }
+  .seg button.active{ background:var(--accent-bg); color:var(--accent-strong); }
+  .seg button:disabled{ opacity:.4; cursor:default; }
+  #clusterN{
+    padding:6px 8px; border-radius:8px; border:1px solid var(--border);
+    background:var(--item-bg); color:var(--text); font:inherit; font-size:.76rem;
+  }
+  #clusterView{
+    margin-left:auto; padding:6px 12px; border-radius:9px; border:1px solid var(--border);
+    background:var(--accent-bg); color:var(--accent-strong); font:inherit; font-size:.76rem; font-weight:700; cursor:pointer;
+  }
+  #clusterView:hover{ filter:brightness(1.1); }
+  .cluster-stats{ display:grid; grid-template-columns:repeat(auto-fit,minmax(104px,1fr)); gap:8px; margin-bottom:12px; }
+  .cluster-stats .stat{ min-width:0; }
+  .cluster-stats .stat b{ font-size:.92rem; }
+  .cluster-stats .stat.band{ grid-column:span 2; background:var(--accent-bg); border-color:color-mix(in srgb, var(--accent) 45%, transparent); }
+  .cluster-stats .stat.band b{ color:var(--accent-strong); }
+  .cluster-chart svg{ display:block; max-width:100%; height:auto; overflow:visible; }
+  .cluster-chart text{ font-family:'Noto Sans TC',sans-serif; font-variant-numeric:tabular-nums; }
+  .cluster-legend{ display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:8px; font-size:.7rem; color:var(--text-faint); }
+  .cluster-legend .sw{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:5px; vertical-align:-1px; }
+  .cluster-legend .sw.bar{ border-radius:2px; }
+  .cluster-legend .sw.line{ width:16px; height:0; border-radius:0; border-top:2px solid; vertical-align:3px; }
+  .cluster-note{ margin-top:10px; font-size:.7rem; color:var(--text-faint); line-height:1.6; }
+
+  .cc-grid{ stroke:var(--border); stroke-dasharray:2 4; }
+  .cc-axis{ stroke:var(--text-faint); }
+  .cc-label{ fill:var(--text-faint); font-size:11px; }
+  .cc-band{ fill:var(--accent); fill-opacity:.18; stroke:var(--accent); stroke-opacity:.6; stroke-dasharray:4 3; }
+  .cc-median{ stroke:var(--accent-strong); stroke-width:2; }
+  .cc-median-label{ fill:var(--accent-strong); font-size:11px; font-weight:700; }
+  .cc-median-line{ fill:none; stroke:var(--accent-strong); stroke-width:2; }
+  .cc-mean-line{ fill:none; stroke:#e3c98f; stroke-width:1.5; stroke-dasharray:5 4; }
+  .cc-median-dot{ fill:var(--accent-strong); }
+  .cc-mean-dot{ fill:#e3c98f; }
 </style>
 </head><body>
 
@@ -414,7 +467,7 @@
 
 <footer>
   <hr class="rule">
-  資料整理自 Sheet.xlsx →「歷史成交總集」工作表，欄位包含最低／最高價參考與各筆歷史成交紀錄。金額單位皆為 ED；標示「尚無成交紀錄」代表目前尚未有可參考的成交資料。點選右上角下拉選單可快速定位品項，點擊層級標題可展開／摺疊。
+  資料整理自 Sheet.xlsx →「歷史成交總集」工作表，欄位包含最低／最高價參考與各筆歷史成交紀錄。金額單位皆為 ED；標示「尚無成交紀錄」代表目前尚未有可參考的成交資料。點選右上角下拉選單可快速定位品項，點擊層級標題可展開／摺疊；點擊有成交紀錄的品項可查看成交分布、建議下標區間與均價走勢。
   <p class="disclaimer">該統計資料僅以已知資訊查看，僅提供觀看者參考，非絕對干涉黑暗精靈市場運作</p>
 </footer>
 
@@ -464,6 +517,28 @@
       <button type="button" id="entrySubmit">提交</button>
     </div>
     <div class="entry-msg" id="entryMsg"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="clusterOverlay" hidden>
+  <div class="modal-panel cluster">
+    <button type="button" class="modal-close" id="clusterClose" aria-label="關閉">×</button>
+    <div class="modal-title" id="clusterTitle"></div>
+    <div class="cluster-sub" id="clusterSub"></div>
+    <div class="cluster-controls">
+      <div class="seg" id="clusterRange">
+        <button type="button" data-range="all">全部</button>
+        <button type="button" data-range="latest">最新</button>
+        <button type="button" data-range="days">近N次交易日</button>
+        <button type="button" data-range="trades">近N筆</button>
+      </div>
+      <select id="clusterN" hidden></select>
+      <button type="button" id="clusterView"></button>
+    </div>
+    <div class="cluster-stats" id="clusterStats"></div>
+    <div class="cluster-chart" id="clusterChart"></div>
+    <div class="cluster-legend" id="clusterLegend"></div>
+    <div class="cluster-note">建議下標區間取所選範圍成交價的 P25–P75（中間 50% 成交落點），較不受極端成交影響；少於 3 筆時資料不足，不顯示區間。價格軸為對數刻度。</div>
   </div>
 </div>
 
@@ -531,7 +606,11 @@
         }).join('')}</div></details>`
       : `<details class="hist" data-empty="true"><summary>無歷史紀錄</summary></details>`;
 
-    li.innerHTML = `<div class="row-main"><div class="row-name">${item.name}</div>${priceTableHtml}</div>${historyHtml}`;
+    const rowMainOpen = hasData
+      ? `<div class="row-main clickable" tabindex="0" role="button" aria-label="${item.name} 成交分布">`
+      : '<div class="row-main">';
+    const hintHtml = hasData ? '<span class="row-hint">點擊查看成交分布</span>' : '';
+    li.innerHTML = `${rowMainOpen}<div class="row-name">${item.name}${hintHtml}</div>${priceTableHtml}</div>${historyHtml}`;
     return li;
   }
 
@@ -676,6 +755,269 @@
   });
   pageNavToggle.addEventListener('click', () => setNavOpen(!pageNav.classList.contains('open')));
   pageNavBackdrop.addEventListener('click', () => setNavOpen(false));
+
+  // ---- 商品成交分布（cluster / 均價走勢） ----
+  const MIN_BAND = 3; // 少於 3 筆不畫建議區間
+  const clusterOverlay = document.getElementById('clusterOverlay');
+  const clusterTitle = document.getElementById('clusterTitle');
+  const clusterSub = document.getElementById('clusterSub');
+  const clusterRange = document.getElementById('clusterRange');
+  const clusterN = document.getElementById('clusterN');
+  const clusterView = document.getElementById('clusterView');
+  const clusterStats = document.getElementById('clusterStats');
+  const clusterChart = document.getElementById('clusterChart');
+  const clusterLegend = document.getElementById('clusterLegend');
+  const cluster = { item:null, range:'all', view:'dist', n:{ days:0, trades:0 } };
+
+  // 依日期排序，同一天保持輸入順序
+  function itemRecords(item){
+    return item.history
+      .map((v, i) => ({ v, i, date:(item.historyDates && item.historyDates[i]) || SNAPSHOT_DATE }))
+      .sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : a.i - b.i);
+  }
+
+  function rangeRecords(recs){
+    const dates = [...new Set(recs.map(r => r.date))];
+    switch(cluster.range){
+      case 'latest': return recs.filter(r => r.date === dates[dates.length - 1]);
+      case 'days': { const keep = new Set(dates.slice(-cluster.n.days)); return recs.filter(r => keep.has(r.date)); }
+      case 'trades': return recs.slice(-cluster.n.trades);
+      default: return recs;
+    }
+  }
+
+  function quantile(sorted, q){
+    const pos = (sorted.length - 1) * q, lo = Math.floor(pos), hi = Math.ceil(pos);
+    return sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo);
+  }
+
+  function summarize(values){
+    const s = values.slice().sort((a, b) => a - b);
+    return {
+      n:s.length, min:s[0], max:s[s.length - 1],
+      p25:quantile(s, .25), median:quantile(s, .5), p75:quantile(s, .75),
+      mean:s.reduce((a, b) => a + b, 0) / s.length,
+    };
+  }
+
+  function fmtShort(n){ return fmtAbbrev(n) || Math.round(n).toLocaleString(); }
+
+  // 對數刻度：把 [lo, hi] 映射到 [a, b]
+  function logScale(lo, hi, a, b){
+    if(lo === hi){ lo /= 1.5; hi *= 1.5; }
+    const pad = (Math.log10(hi) - Math.log10(lo)) * 0.08;
+    const l0 = Math.log10(lo) - pad, l1 = Math.log10(hi) + pad;
+    const f = v => a + (Math.log10(v) - l0) / (l1 - l0) * (b - a);
+    f.ticks = () => {
+      const out = [];
+      for(let e = Math.floor(l0); e <= Math.ceil(l1); e++){
+        [1, 2, 5].forEach(m => {
+          const v = m * 10 ** e;
+          if(Math.log10(v) >= l0 && Math.log10(v) <= l1) out.push({ v, m });
+        });
+      }
+      const ticks = out.length > 7 ? out.filter(t => t.m === 1) : out;
+      return (ticks.length >= 2 ? ticks : out).map(t => t.v);
+    };
+    return f;
+  }
+
+  function renderDist(recs, st, W){
+    const H = 200, L = 16, R = 16, T = 34, B = 30, r = 6;
+    const x = logScale(st.min, st.max, L + r, W - R - r);
+    const base = H - B, cy = T + (base - T) / 2, half = (base - T) / 2 - r;
+    let s = '';
+    x.ticks().forEach(v => {
+      const px = x(v).toFixed(1);
+      s += `<line class="cc-grid" x1="${px}" x2="${px}" y1="${T}" y2="${base}"/>`;
+      s += `<text class="cc-label" x="${px}" y="${base + 18}" text-anchor="middle">${fmtShort(v)}</text>`;
+    });
+    s += `<line class="cc-axis" x1="${L}" x2="${W - R}" y1="${base}" y2="${base}"/>`;
+    if(st.n >= MIN_BAND){
+      const x0 = x(st.p25), x1 = x(st.p75);
+      s += `<rect class="cc-band" x="${x0.toFixed(1)}" y="${T}" width="${Math.max(2, x1 - x0).toFixed(1)}" height="${base - T}" rx="4"/>`;
+    }
+    const xm = x(st.median);
+    const xmLabel = Math.min(W - R - 44, Math.max(L + 44, xm));
+    s += `<line class="cc-median" x1="${xm.toFixed(1)}" x2="${xm.toFixed(1)}" y1="${T - 6}" y2="${base}"/>`;
+    s += `<text class="cc-median-label" x="${xmLabel.toFixed(1)}" y="${T - 12}" text-anchor="middle">中位 ${fmtShort(st.median)}</text>`;
+
+    // 簡易 beeswarm：同價位附近的點上下錯開
+    const placed = [];
+    recs.slice().sort((a, b) => a.v - b.v).forEach(rec => {
+      const px = x(rec.v);
+      let py = cy;
+      for(let k = 0; k < 60; k++){
+        const dy = (k % 2 ? 1 : -1) * Math.ceil(k / 2) * (r * 2 + 1);
+        if(Math.abs(dy) > half) break;
+        py = cy + dy;
+        if(!placed.some(p => Math.hypot(p.x - px, p.y - py) < r * 2 + 1)) break;
+      }
+      placed.push({ x:px, y:py });
+      const c = colorForDate(rec.date);
+      s += `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="${r}" fill="${c.text}" fill-opacity=".85" stroke="${c.border}" stroke-width="1.5"><title>${rec.date}・${rec.v.toLocaleString()}</title></circle>`;
+    });
+    return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="成交價分布">${s}</svg>`;
+  }
+
+  function renderTrend(recs, W){
+    const groups = [];
+    recs.forEach(r => {
+      let g = groups[groups.length - 1];
+      if(!g || g.date !== r.date) groups.push(g = { date:r.date, vals:[] });
+      g.vals.push(r.v);
+    });
+    groups.forEach(g => { g.st = summarize(g.vals); });
+
+    const H = 260, L = 58, R = 16, T = 16, B = 44;
+    const vals = recs.map(r => r.v);
+    const y = logScale(Math.min(...vals), Math.max(...vals), H - B, T);
+    const step = (W - L - R) / groups.length;
+    const gx = i => L + step * (i + .5);
+    const bw = Math.min(22, step * .4);
+    const labelEvery = Math.ceil(40 / step);
+    let s = '';
+    y.ticks().forEach(v => {
+      const py = y(v).toFixed(1);
+      s += `<line class="cc-grid" x1="${L}" x2="${W - R}" y1="${py}" y2="${py}"/>`;
+      s += `<text class="cc-label" x="${L - 8}" y="${py}" dy=".35em" text-anchor="end">${fmtShort(v)}</text>`;
+    });
+    s += `<line class="cc-axis" x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}"/>`;
+
+    groups.forEach((g, i) => {
+      const c = colorForDate(g.date), px = gx(i), st = g.st;
+      const tip = `${g.date}\n筆數 ${st.n}\n最高 ${st.max.toLocaleString()}\nP75 ${Math.round(st.p75).toLocaleString()}\n中位 ${Math.round(st.median).toLocaleString()}\n平均 ${Math.round(st.mean).toLocaleString()}\nP25 ${Math.round(st.p25).toLocaleString()}\n最低 ${st.min.toLocaleString()}`;
+      s += `<g><title>${tip}</title>`;
+      s += `<rect x="${(px - step / 2).toFixed(1)}" y="${T}" width="${step.toFixed(1)}" height="${H - B - T}" fill="transparent"/>`;
+      s += `<line x1="${px.toFixed(1)}" x2="${px.toFixed(1)}" y1="${y(st.max).toFixed(1)}" y2="${y(st.min).toFixed(1)}" stroke="${c.border}" stroke-width="2"/>`;
+      if(st.n >= MIN_BAND){
+        const y75 = y(st.p75), y25 = y(st.p25);
+        s += `<rect x="${(px - bw / 2).toFixed(1)}" y="${y75.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(2, y25 - y75).toFixed(1)}" rx="3" fill="${c.bg}" stroke="${c.text}" stroke-width="1.5"/>`;
+      } else {
+        g.vals.forEach(v => { s += `<circle cx="${px.toFixed(1)}" cy="${y(v).toFixed(1)}" r="3.5" fill="${c.text}"/>`; });
+      }
+      if(i % labelEvery === 0){
+        s += `<text class="cc-label" x="${px.toFixed(1)}" y="${H - B + 16}" text-anchor="middle">${g.date.slice(5)}</text>`;
+        s += `<text class="cc-label" x="${px.toFixed(1)}" y="${H - B + 30}" text-anchor="middle">${st.n}筆</text>`;
+      }
+      s += '</g>';
+    });
+
+    const line = (key, cls) => groups.length > 1
+      ? `<polyline class="${cls}" points="${groups.map((g, i) => `${gx(i).toFixed(1)},${y(g.st[key]).toFixed(1)}`).join(' ')}"/>`
+      : '';
+    s += line('mean', 'cc-mean-line') + line('median', 'cc-median-line');
+    groups.forEach((g, i) => {
+      s += `<circle class="cc-mean-dot" cx="${gx(i).toFixed(1)}" cy="${y(g.st.mean).toFixed(1)}" r="3.5" pointer-events="none"/>`;
+      s += `<circle class="cc-median-dot" cx="${gx(i).toFixed(1)}" cy="${y(g.st.median).toFixed(1)}" r="4" pointer-events="none"/>`;
+    });
+    return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="均價走勢">${s}</svg>`;
+  }
+
+  function renderClusterStats(st){
+    const band = st.n >= MIN_BAND ? `${fmtShort(st.p25)} ～ ${fmtShort(st.p75)}` : '資料不足';
+    const bandTitle = st.n >= MIN_BAND ? `${Math.round(st.p25).toLocaleString()} ～ ${Math.round(st.p75).toLocaleString()}` : `少於 ${MIN_BAND} 筆`;
+    const cell = (v, label) => `<div class="stat" title="${Math.round(v).toLocaleString()}"><b>${fmtShort(v)}</b><span>${label}</span></div>`;
+    return `<div class="stat band" title="${bandTitle}"><b>${band}</b><span>建議下標區間（P25–P75）</span></div>`
+      + cell(st.median, '中位數') + cell(st.mean, '平均')
+      + cell(st.min, '最低') + cell(st.max, '最高')
+      + `<div class="stat"><b>${st.n}</b><span>筆數</span></div>`;
+  }
+
+  function renderClusterLegend(recs){
+    if(cluster.view === 'dist'){
+      const dates = [...new Set(recs.map(r => r.date))];
+      return dates.map(d => `<span><span class="sw" style="background:${colorForDate(d).text}"></span>${d}</span>`).join('')
+        + '<span><span class="sw bar" style="background:color-mix(in srgb, var(--accent) 40%, transparent)"></span>建議下標區間</span>'
+        + '<span><span class="sw line" style="border-color:var(--accent-strong)"></span>中位數</span>';
+    }
+    return '<span><span class="sw line" style="border-color:var(--accent-strong)"></span>中位數</span>'
+      + '<span><span class="sw line" style="border-color:#e3c98f;border-top-style:dashed"></span>平均</span>'
+      + '<span><span class="sw bar" style="background:var(--surface-2);border:1px solid var(--text-faint)"></span>P25–P75</span>'
+      + '<span><span class="sw line" style="width:2px;height:12px;border-top:none;background:var(--text-faint);vertical-align:-2px"></span>最低–最高</span>';
+  }
+
+  function renderCluster(){
+    const recs = itemRecords(cluster.item);
+    const dates = [...new Set(recs.map(r => r.date))];
+    const nOptions = {
+      days: Array.from({ length:Math.max(0, dates.length - 2) }, (_, k) => k + 2),
+      trades: [3, 5, 10, 20, 30].filter(n => n < recs.length),
+    };
+    if(cluster.range in nOptions && !nOptions[cluster.range].length) cluster.range = 'all';
+
+    clusterRange.querySelectorAll('button').forEach(b => {
+      const r = b.dataset.range;
+      b.disabled = r in nOptions && !nOptions[r].length;
+      b.classList.toggle('active', r === cluster.range);
+    });
+
+    if(cluster.range in nOptions){
+      const list = nOptions[cluster.range];
+      if(!list.includes(cluster.n[cluster.range])){
+        cluster.n[cluster.range] = cluster.range === 'trades' && list.includes(10) ? 10 : list[list.length - 1];
+      }
+      clusterN.innerHTML = list.map(n => `<option value="${n}">${cluster.range === 'days' ? `近 ${n} 次交易日` : `近 ${n} 筆`}</option>`).join('');
+      clusterN.value = cluster.n[cluster.range];
+      clusterN.hidden = false;
+    } else {
+      clusterN.hidden = true;
+    }
+
+    const shown = rangeRecords(recs);
+    const shownDates = [...new Set(shown.map(r => r.date))];
+    const st = summarize(shown.map(r => r.v));
+    clusterSub.textContent = `${shown.length} / ${recs.length} 筆・${shownDates[0]}${shownDates.length > 1 ? ' ～ ' + shownDates[shownDates.length - 1] : ''}・單位 ED`;
+    clusterStats.innerHTML = renderClusterStats(st);
+    clusterView.textContent = cluster.view === 'dist' ? '切換均價走勢' : '切換成交分布';
+
+    const W = Math.max(300, Math.floor(clusterChart.clientWidth || 640));
+    clusterChart.innerHTML = cluster.view === 'dist' ? renderDist(shown, st, W) : renderTrend(shown, W);
+    clusterLegend.innerHTML = renderClusterLegend(shown);
+  }
+
+  function openCluster(key){
+    const [t, i] = key.split('-').map(Number);
+    const item = DATA[t] && DATA[t].items[i];
+    if(!item || !item.history.length) return;
+    cluster.item = item;
+    cluster.range = 'all';
+    cluster.view = 'dist';
+    clusterTitle.textContent = item.name;
+    openOverlay(clusterOverlay);
+    renderCluster();
+  }
+
+  const mainEl = document.getElementById('main');
+  mainEl.addEventListener('click', e => {
+    const rowMain = e.target.closest('.row-main.clickable');
+    if(rowMain) openCluster(rowMain.closest('li.row').dataset.key);
+  });
+  mainEl.addEventListener('keydown', e => {
+    if(e.key !== 'Enter' && e.key !== ' ') return;
+    const rowMain = e.target.closest('.row-main.clickable');
+    if(!rowMain) return;
+    e.preventDefault();
+    openCluster(rowMain.closest('li.row').dataset.key);
+  });
+  clusterRange.addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if(!b || b.disabled) return;
+    cluster.range = b.dataset.range;
+    renderCluster();
+  });
+  clusterN.addEventListener('change', () => {
+    cluster.n[cluster.range] = Number(clusterN.value);
+    renderCluster();
+  });
+  clusterView.addEventListener('click', () => {
+    cluster.view = cluster.view === 'dist' ? 'trend' : 'dist';
+    renderCluster();
+  });
+  document.getElementById('clusterClose').addEventListener('click', () => closeOverlay(clusterOverlay));
+  window.addEventListener('resize', () => {
+    if(!clusterOverlay.hidden && cluster.item) renderCluster();
+  });
 
   const SIDE_ART = ['image/Ai_restore_Peta.png', 'image/Ai_restore_Peta_2.png'];
   const sideArt = document.getElementById('sideArt');
@@ -939,13 +1281,14 @@
   document.addEventListener('click', e => {
     if(!datePopover.hidden && !datePicker.contains(e.target)) closeDatePopover();
   });
-  [passwordOverlay, entryOverlay].forEach(overlay => {
+  [passwordOverlay, entryOverlay, clusterOverlay].forEach(overlay => {
     overlay.addEventListener('click', e => { if(e.target === overlay) closeOverlay(overlay); });
   });
   document.addEventListener('keydown', e => {
     if(e.key !== 'Escape') return;
     if(passwordOverlay.classList.contains('show')) closeOverlay(passwordOverlay);
     if(entryOverlay.classList.contains('show')) closeOverlay(entryOverlay);
+    if(clusterOverlay.classList.contains('show')) closeOverlay(clusterOverlay);
   });
 </script>
 
