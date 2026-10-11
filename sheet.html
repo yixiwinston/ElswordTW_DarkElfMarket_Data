@@ -415,11 +415,20 @@
     background:var(--accent-bg); color:var(--accent-strong); font:inherit; font-size:.76rem; font-weight:700; cursor:pointer;
   }
   #clusterView:hover{ filter:brightness(1.1); }
-  .cluster-stats{ display:grid; grid-template-columns:repeat(auto-fit,minmax(104px,1fr)); gap:8px; margin-bottom:12px; }
+  .cluster-count{ font-size:.78rem; color:var(--text-dim); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .cluster-count b{ color:var(--text); font-size:.9rem; }
+  .cluster-stats{ display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
+  .stat-row{ display:grid; gap:8px; }
+  .stat-row.three{ grid-template-columns:1.6fr 1fr 1fr; }
+  .stat-row.two{ grid-template-columns:1fr 1fr; }
   .cluster-stats .stat{ min-width:0; }
-  .cluster-stats .stat b{ font-size:.92rem; }
-  .cluster-stats .stat.band{ grid-column:span 2; background:var(--accent-bg); border-color:color-mix(in srgb, var(--accent) 45%, transparent); }
+  .cluster-stats .stat b{ font-size:.92rem; overflow-wrap:anywhere; }
+  .cluster-stats .stat.band{ background:var(--accent-bg); border-color:color-mix(in srgb, var(--accent) 45%, transparent); }
   .cluster-stats .stat.band b{ color:var(--accent-strong); }
+  .cluster-stats .stat.low{ background:color-mix(in srgb, #7ee2a6 10%, var(--surface-2)); border-color:color-mix(in srgb, #7ee2a6 40%, transparent); }
+  .cluster-stats .stat.low b{ color:#7ee2a6; }
+  .cluster-stats .stat.high{ background:color-mix(in srgb, #ff8a80 10%, var(--surface-2)); border-color:color-mix(in srgb, #ff8a80 40%, transparent); }
+  .cluster-stats .stat.high b{ color:#ff8a80; }
   .cluster-chart svg{ display:block; max-width:100%; height:auto; overflow:visible; }
   .cluster-chart text{ font-family:'Noto Sans TC',sans-serif; font-variant-numeric:tabular-nums; }
   .cluster-legend{ display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:8px; font-size:.7rem; color:var(--text-faint); }
@@ -467,7 +476,7 @@
 
 <footer>
   <hr class="rule">
-  資料整理自 Sheet.xlsx →「歷史成交總集」工作表，欄位包含最低／最高價參考與各筆歷史成交紀錄。金額單位皆為 ED；標示「尚無成交紀錄」代表目前尚未有可參考的成交資料。點選右上角下拉選單可快速定位品項，點擊層級標題可展開／摺疊；點擊有成交紀錄的品項可查看成交分布、建議下標區間與均價走勢。
+  資料整理自 Sheet.xlsx →「歷史成交總集」工作表，欄位包含最低／最高價參考與各筆歷史成交紀錄。金額單位皆為 ED；標示「尚無成交紀錄」代表目前尚未有可參考的成交資料。點選右上角下拉選單可快速定位品項，點擊層級標題可展開／摺疊；點擊有成交紀錄的品項可查看成交分布、建議出價區間與均價走勢。
   <p class="disclaimer">該統計資料僅以已知資訊查看，僅提供觀看者參考，非絕對干涉黑暗精靈市場運作</p>
 </footer>
 
@@ -530,15 +539,16 @@
         <button type="button" data-range="all">全部</button>
         <button type="button" data-range="latest">最新</button>
         <button type="button" data-range="days">近N次交易日</button>
-        <button type="button" data-range="trades">近N筆</button>
+        <button type="button" data-range="trades">近N筆交易</button>
       </div>
       <select id="clusterN" hidden></select>
+      <span class="cluster-count" id="clusterCount"></span>
       <button type="button" id="clusterView"></button>
     </div>
     <div class="cluster-stats" id="clusterStats"></div>
     <div class="cluster-chart" id="clusterChart"></div>
     <div class="cluster-legend" id="clusterLegend"></div>
-    <div class="cluster-note">建議下標區間取所選範圍成交價的 P25–P75（中間 50% 成交落點），較不受極端成交影響；少於 3 筆時資料不足，不顯示區間。價格軸為對數刻度。</div>
+    <div class="cluster-note">建議出價區間取所選範圍成交價的 P25–P75（中間 50% 成交落點），較不受極端成交影響；少於 3 筆時資料不足，不顯示區間。價格軸為對數刻度。</div>
   </div>
 </div>
 
@@ -761,6 +771,7 @@
   const clusterOverlay = document.getElementById('clusterOverlay');
   const clusterTitle = document.getElementById('clusterTitle');
   const clusterSub = document.getElementById('clusterSub');
+  const clusterCount = document.getElementById('clusterCount');
   const clusterRange = document.getElementById('clusterRange');
   const clusterN = document.getElementById('clusterN');
   const clusterView = document.getElementById('clusterView');
@@ -914,21 +925,23 @@
     return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="均價走勢">${s}</svg>`;
   }
 
+  // 建議出價區間統一以「億」為單位
+  function fmtYi(n){ return (n / 1e8).toFixed(2); }
+
   function renderClusterStats(st){
-    const band = st.n >= MIN_BAND ? `${fmtShort(st.p25)} ～ ${fmtShort(st.p75)}` : '資料不足';
+    const band = st.n >= MIN_BAND ? `${fmtYi(st.p25)} ～ ${fmtYi(st.p75)} 億` : '資料不足';
     const bandTitle = st.n >= MIN_BAND ? `${Math.round(st.p25).toLocaleString()} ～ ${Math.round(st.p75).toLocaleString()}` : `少於 ${MIN_BAND} 筆`;
-    const cell = (v, label) => `<div class="stat" title="${Math.round(v).toLocaleString()}"><b>${fmtShort(v)}</b><span>${label}</span></div>`;
-    return `<div class="stat band" title="${bandTitle}"><b>${band}</b><span>建議下標區間（P25–P75）</span></div>`
-      + cell(st.median, '中位數') + cell(st.mean, '平均')
-      + cell(st.min, '最低') + cell(st.max, '最高')
-      + `<div class="stat"><b>${st.n}</b><span>筆數</span></div>`;
+    const cell = (v, label, cls = '') => `<div class="stat ${cls}" title="${Math.round(v).toLocaleString()}"><b>${fmtShort(v)}</b><span>${label}</span></div>`;
+    return `<div class="stat-row three"><div class="stat band" title="${bandTitle}"><b>${band}</b><span>建議出價區間（P25–P75）</span></div>`
+      + cell(st.median, '中位數') + cell(st.mean, '平均數') + '</div>'
+      + `<div class="stat-row two">${cell(st.min, '最低', 'low')}${cell(st.max, '最高', 'high')}</div>`;
   }
 
   function renderClusterLegend(recs){
     if(cluster.view === 'dist'){
       const dates = [...new Set(recs.map(r => r.date))];
       return dates.map(d => `<span><span class="sw" style="background:${colorForDate(d).text}"></span>${d}</span>`).join('')
-        + '<span><span class="sw bar" style="background:color-mix(in srgb, var(--accent) 40%, transparent)"></span>建議下標區間</span>'
+        + '<span><span class="sw bar" style="background:color-mix(in srgb, var(--accent) 40%, transparent)"></span>建議出價區間</span>'
         + '<span><span class="sw line" style="border-color:var(--accent-strong)"></span>中位數</span>';
     }
     return '<span><span class="sw line" style="border-color:var(--accent-strong)"></span>中位數</span>'
@@ -967,7 +980,8 @@
     const shown = rangeRecords(recs);
     const shownDates = [...new Set(shown.map(r => r.date))];
     const st = summarize(shown.map(r => r.v));
-    clusterSub.textContent = `${shown.length} / ${recs.length} 筆・${shownDates[0]}${shownDates.length > 1 ? ' ～ ' + shownDates[shownDates.length - 1] : ''}・單位 ED`;
+    clusterSub.textContent = `${shownDates[0]}${shownDates.length > 1 ? ' ～ ' + shownDates[shownDates.length - 1] : ''}・單位 ED`;
+    clusterCount.innerHTML = `<b>${shown.length}</b> / ${recs.length} 筆`;
     clusterStats.innerHTML = renderClusterStats(st);
     clusterView.textContent = cluster.view === 'dist' ? '切換均價走勢' : '切換成交分布';
 
